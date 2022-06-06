@@ -1,26 +1,27 @@
 from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from polls.models import Question
-from polls.serializers import QuestionSerializer, QuestionResponseSerializer
-from polls.use_cases.actions import QuestionFindAllAction, QuestionCreateAction, QuestionUpdateAction, \
-    QuestionDeleteAction
-
-from rest_framework import viewsets, status
+from polls.serializers import QuestionDetailSerializer, QuestionSerializer
+from polls.use_cases.actions import (
+    QuestionCreateAction,
+    QuestionFindAllAction,
+    QuestionUpdateAction,
+)
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
+    serializer_class = QuestionDetailSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
         return QuestionFindAllAction.invoke()
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
 
         # format などの validation は serializer で行いたいのでインスタンスの取得も妥協
         instance = self.get_object()
@@ -43,14 +44,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def wrap_success_create_response(self, response_data):
         """create メソッドのレスポンスを構築する"""
         headers = self.get_success_headers(response_data)
-        return Response(response_data,
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
     # inputとoutputのserializerが異なる場合、
     # ドキュメントの response の Serializer を指定する
     @extend_schema(
-        responses=QuestionResponseSerializer,
+        responses=QuestionSerializer,
     )
     def create(self, request, *args, **kwargs):
         # POSTで /api/polls/questions/ を実行した場合に実行されるmethod
@@ -66,7 +65,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         instance = action.execute()
 
         # response時のシリアライザ
-        response_serializer = QuestionResponseSerializer(instance)
+        response_serializer = QuestionSerializer(instance)
         return self.wrap_success_create_response(response_serializer.data)
 
     def destroy(self, request, *args, **kwargs):

@@ -1,7 +1,4 @@
-from dependency_injector.wiring import Provide
-
 from polls.models import Question
-from project.containers import Container
 
 
 class QuestionFindAllAction:
@@ -13,7 +10,7 @@ class QuestionFindAllAction:
         例) ログインユーザーによって参照範囲を制限する場合など
 
         """
-        return Question.objects.all().prefetch_related('choice_set')
+        return Question.objects.all().prefetch_related("choice_set")
 
 
 class QuestionCreateAction:
@@ -22,8 +19,8 @@ class QuestionCreateAction:
 
     def execute(self) -> Question:
         q = Question(
-            question_text=self._data["question_text"],
-            pub_date=self._data["pub_date"])
+            question_text=self._data["question_text"], pub_date=self._data["pub_date"]
+        )
 
         q.save()
         return q

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from polls.models import Question, Choice
+from polls.models import Choice, Question
 
 
 class ChoiceSerializer(ModelSerializer):
@@ -10,16 +10,15 @@ class ChoiceSerializer(ModelSerializer):
         fields = "__all__"
 
 
-class QuestionSerializer(ModelSerializer):
-    choice_set = ChoiceSerializer(many=True,
-                                  read_only=True)
+class QuestionDetailSerializer(ModelSerializer):
+    choice_set = ChoiceSerializer(many=True, read_only=True)
 
     class Meta:
         model = Question
         fields = "__all__"
 
 
-class QuestionResponseSerializer(ModelSerializer):
+class QuestionSerializer(ModelSerializer):
     code = serializers.SerializerMethodField()
 
     def get_code(self, obj):
