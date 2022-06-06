@@ -6,6 +6,7 @@ from django.utils.functional import SimpleLazyObject
 
 def build_container():
     """
+    DI の関数でモデルを利用できるように
     公式の example を遅延ローディングするようにしている
 
     https://python-dependency-injector.ets-labs.org/examples/django.html
