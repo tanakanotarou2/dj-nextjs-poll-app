@@ -13,7 +13,7 @@ class QuestionFindAllAction:
         例) ログインユーザーによって参照範囲を制限する場合など
 
         """
-        return Question.objects.all()
+        return Question.objects.all().prefetch_related('choice_set')
 
 
 class QuestionCreateAction:
