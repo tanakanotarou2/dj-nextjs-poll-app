@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from lib.views import ModelViewSet
+from prjlib.views import ModelViewSet
 from polls.models import Question
 from polls.serializers import QuestionDetailSerializer, QuestionSerializer, QuestionEditSerializer
 from polls.use_cases.actions import (
