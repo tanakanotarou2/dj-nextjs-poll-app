@@ -16,4 +16,5 @@ module.exports = {
   rules: {
     'require-jsdoc': ['off'],
   },
+  ignorePatterns: ['src/api/*'],
 };
