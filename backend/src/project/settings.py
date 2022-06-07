@@ -10,21 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-pg(3c_g+=)-6t%6*6kfkpx0a(=1in6_$2ohndt7_-#^00n1phh"
+SECRET_KEY = os.getenv("DJ_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG")
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
 # Application definition
 
@@ -101,10 +106,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
+# ==============================================================
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ja"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Tokyo"
 
 USE_I18N = True
 
@@ -114,13 +120,38 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
+# ==============================================================
 
 STATIC_URL = "/static/"
 
+# プロジェクトの staticファイルの配置場所
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# collect した後に配置されるパス
+STATIC_ROOT = str(BASE_DIR / "public/static/")
+
+# media files (アップロードファイルなどが配置される場所の設定)
+# ==============================================================
+MEDIA_ROOT = os.path.join(BASE_DIR, "site_media/")
+MEDIA_URL = "/media/"
+
+
+# other django default settings
+# ==============================================================
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# CORS
+# ==============================================================
+CORS_ORIGIN_WHITELIST = [
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+]
+CORS_ALLOW_CREDENTIALS = True
+
 
 # REST framework
 # ==============================================================
@@ -131,10 +162,14 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-# CORS
+
+# spectacular (API document)
 # ==============================================================
-CORS_ORIGIN_WHITELIST = [
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
-]
-CORS_ALLOW_CREDENTIALS = True
+SPECTACULAR_SETTINGS = {
+    "SERVE_PERMISSIONS": [
+        "rest_framework.permissions.AllowAny" if DEBUG else "rest_framework.permissions.IsAdminUser"
+    ],
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+    },
+}
