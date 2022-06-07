@@ -18,6 +18,12 @@ class QuestionDetailSerializer(ModelSerializer):
         fields = "__all__"
 
 
+class QuestionEditSerializer(ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ['pub_date', 'question_text']
+
+
 class QuestionSerializer(ModelSerializer):
     code = serializers.SerializerMethodField()
 

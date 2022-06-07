@@ -27,10 +27,11 @@ router = routers.DefaultRouter()
 router.register(r"users", UserViewSet)
 
 urlpatterns = [
+    # path("", include(router.urls)),
     path("admin/", admin.site.urls),
-    path("", include(router.urls)),
-    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path("polls/", include("polls.urls")),
+    path("api/api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("api/polls/", include("polls.urls")),
+
     # API SCHEMA
     # ==========================================
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -38,10 +39,5 @@ urlpatterns = [
         "api/schema/swagger-ui/",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
-    ),
-    path(
-        "api/schema/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
-        name="redoc",
     ),
 ]
