@@ -6,14 +6,24 @@ import styles from '../../styles/Home.module.css';
 import { apiClient } from '../lib/apiClient';
 import { useEffect } from 'react';
 
+import { useQueryClient, useMutation } from 'react-query'
+import {useAspidaQuery} from "@aspida/react-query";
+// import { useAspidaQuery } from "@aspida/react-query"
+// import aspida from "@aspida/axios" // "@aspida/fetch", "@aspida/node-fetch"
+// import api from "../api/$api"
+
 const Home: NextPage = () => {
+  const queryClient = useQueryClient()
+
+  // .get がコールされた結果を受け取る
+  const {data:pollData ,refetch:pollRefetch} = useAspidaQuery(apiClient.api.polls.questions,{});
+  console.log('res1', pollData,pollRefetch);
+
   useEffect(() => {
     const fetchArticle = async () => {
       // $ つきの場合は response.body を自動で展開してくれる
-      const res = await apiClient.api.polls.questions.$get();
-      console.log('res1', res);
-      const res2 = await apiClient.api.polls.questions.get();
-      console.log('res2', res2);
+      // const res2 = await apiClient.api.polls.questions.get();
+      // console.log('res2', res2);
       // create
       // const res3 = await apiClient.polls.questions.$post({
       //     body:{
