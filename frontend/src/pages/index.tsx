@@ -10,9 +10,9 @@ const Home: NextPage = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       // $ つきの場合は response.body を自動で展開してくれる
-      const res = await apiClient.polls.questions.$get();
+      const res = await apiClient.api.polls.questions.$get();
       console.log('res1', res);
-      const res2 = await apiClient.polls.questions.get();
+      const res2 = await apiClient.api.polls.questions.get();
       console.log('res2', res2);
       // create
       // const res3 = await apiClient.polls.questions.$post({

@@ -3,6 +3,5 @@ module.exports = {
   outputEachDir: true, // Generate $api.ts in each endpoint directory
   openapi: {
     inputFile: 'http://localhost:8000/api/schema/',
-    trailingSlash: true,
   },
 };
