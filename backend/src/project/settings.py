@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv("DJ_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 # Application definition
 
@@ -48,7 +48,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -147,8 +147,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS
 # ==============================================================
 CORS_ORIGIN_WHITELIST = [
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -168,15 +168,19 @@ REST_FRAMEWORK = {
 # ==============================================================
 SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": [
-        "rest_framework.permissions.AllowAny" if DEBUG else "rest_framework.permissions.IsAdminUser"
+        "rest_framework.permissions.AllowAny"
+        if DEBUG
+        else "rest_framework.permissions.IsAdminUser"
     ],
     "SWAGGER_UI_SETTINGS": {
         "persistAuthorization": True,
     },
     # request, response の オブジェクトを分ける. frontend で生成する create アクション(POST) の型に readonly field が含まれなくなる。
-    'COMPONENT_SPLIT_REQUEST': True,
+    "COMPONENT_SPLIT_REQUEST": True,
     # /api/ の prefix を除く
     # TODO: これをいれていると swagger の リクエスト先 URL も /api/ が省かれて 404 エラーとなる。
     #       設定方法がわからなかったので、代替案として env で切り替えられるようにしている。 swagger url の設定方法を確認する
-    'SCHEMA_PATH_PREFIX_TRIM': '/api/' if os.getenv('ENABLE_SCHEMA_PATH_PREFIX_TRIM', '1')=="1" else ''
+    "SCHEMA_PATH_PREFIX_TRIM": "/api/"
+    if os.getenv("ENABLE_SCHEMA_PATH_PREFIX_TRIM", "1") == "1"
+    else "",
 }

@@ -1,4 +1,6 @@
-from polls.models import Question
+from django.db import transaction
+
+from polls.models import Choice, Question
 
 
 class QuestionFindAllAction:
@@ -15,26 +17,35 @@ class QuestionFindAllAction:
 
 class QuestionCreateAction:
     def __init__(self, data: dict):
-        self._data = data
+        self._data = data.copy()
 
     def execute(self) -> Question:
-        q = Question(
-            question_text=self._data["question_text"], pub_date=self._data["pub_date"]
-        )
+        with transaction.atomic():
+            q = Question(
+                question_text=self._data["question_text"],
+                pub_date=self._data["pub_date"],
+            )
+            q.save()
 
-        q.save()
-        return q
+            choices = []
+            for data in self._data["choice_set"]:
+                choices.append(Choice(choice_text=data["choice_text"], question=q))
+            Choice.objects.bulk_create(choices)
+
+        # 少し無駄だけど、choice_setの紐付いたQuestionを再取得する
+        return Question.objects.prefetch_related("choice_set").get(id=q.id)
 
 
 class QuestionUpdateAction:
     def __init__(self, instance: Question, data: dict):
         self._instance = instance
-        self._data = data
+        self._data = data.copy()
 
     def execute(self) -> Question:
         # 業務的な validation があれば validation service を作る
 
         # 本当は1項目づつみるほうが適切と思う
+
         for k, v in self._data.items():
             setattr(self._instance, k, v)
 

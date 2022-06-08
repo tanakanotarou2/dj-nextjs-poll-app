@@ -1,11 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.urls import include, path
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularRedocView,
-    SpectacularSwaggerView,
-)
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers, serializers, viewsets
 
 
@@ -31,7 +27,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("api/polls/", include("polls.urls")),
-
     # API SCHEMA
     # ==========================================
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

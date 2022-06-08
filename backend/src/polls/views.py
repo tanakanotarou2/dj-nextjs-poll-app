@@ -3,14 +3,18 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from prjlib.views import ModelViewSet
 from polls.models import Question
-from polls.serializers import QuestionDetailSerializer, QuestionSerializer, QuestionEditSerializer
+from polls.serializers import (
+    QuestionDetailSerializer,
+    QuestionSerializer,
+    QuestionUpdateSerializer,
+)
 from polls.use_cases.actions import (
     QuestionCreateAction,
     QuestionFindAllAction,
     QuestionUpdateAction,
 )
+from prjlib.views import ModelViewSet
 
 
 class QuestionViewSet(ModelViewSet):
@@ -22,17 +26,15 @@ class QuestionViewSet(ModelViewSet):
         return QuestionFindAllAction.invoke()
 
     def _update(self, request, *args, **kwargs):
-        partial = kwargs.pop("partial", False)
-
-        # format などの validation は serializer で行いたいのでインスタンスの取得も妥協
+        # format などの validation は serializer で行いたいのでインスタンスの取得も妥協します
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = QuestionUpdateSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         action = QuestionUpdateAction(instance, serializer.validated_data)
         res_instance = action.execute()
 
-        self.get_serializer(res_instance)
+        response_data = QuestionSerializer(res_instance).data
 
         # [memo]
         # prefetch, select_related の再取得は use case 側で行います。
@@ -42,21 +44,21 @@ class QuestionViewSet(ModelViewSet):
         #     # forcibly invalidate the prefetch cache on the instance.
         #     instance._prefetched_objects_cache = {}
 
-        return Response(serializer.data)
+        return Response(response_data)
 
-    # inputとoutputのserializerが異なる場合、
-    # ドキュメントの response の Serializer を指定する
+    # serializer が異なる場合は指定します
+    # update では List と異なる Serializer を使うので、それに合わせて指定しています。
     @extend_schema(
-        request=QuestionEditSerializer,
+        request=QuestionUpdateSerializer,
         responses=QuestionSerializer,
     )
+    def partial_update(self, request, *args, **kwargs):
+        return super(QuestionViewSet, self).partial_update(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         # POSTで /api/polls/questions/ を実行した場合に実行されるmethod
 
-        # request時のシリアライザ
-        # フロント側の openapi2aspida で生成された typescript 定義だと, readonly の項目も必須入力となる。
-        # 編集用の serializer を用意することを妥協します。
-        request_serializer = QuestionEditSerializer(data=request.data, context=self.get_serializer_context())
+        request_serializer = self.get_serializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
 
         # QuestionCreateActionに処理委譲
@@ -66,11 +68,13 @@ class QuestionViewSet(ModelViewSet):
         instance = action.execute()
 
         # response時のシリアライザ
-        response_serializer = QuestionSerializer(instance)
+        response_serializer = self.get_serializer(instance)
         return self.wrap_success_create_response(response_serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         """Questionデータを削除します"""
+
+        # このような validation のない場合は、ModelView の機能をそのまま使ってもOKです。
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
