@@ -135,14 +135,12 @@ STATIC_ROOT = str(BASE_DIR / "public/static/")
 MEDIA_ROOT = os.path.join(BASE_DIR, "site_media/")
 MEDIA_URL = "/media/"
 
-
 # other django default settings
 # ==============================================================
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 
 # CORS
 # ==============================================================
@@ -151,7 +149,6 @@ CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
-
 
 # REST framework
 # ==============================================================
@@ -162,15 +159,12 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-
 # spectacular (API document)
 # https://drf-spectacular.readthedocs.io/en/latest/settings.html
 # ==============================================================
 SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": [
-        "rest_framework.permissions.AllowAny"
-        if DEBUG
-        else "rest_framework.permissions.IsAdminUser"
+        "rest_framework.permissions.AllowAny" if DEBUG else "rest_framework.permissions.IsAdminUser"
     ],
     "SWAGGER_UI_SETTINGS": {
         "persistAuthorization": True,
@@ -180,7 +174,5 @@ SPECTACULAR_SETTINGS = {
     # /api/ の prefix を除く
     # TODO: これをいれていると swagger の リクエスト先 URL も /api/ が省かれて 404 エラーとなる。
     #       設定方法がわからなかったので、代替案として env で切り替えられるようにしている。 swagger url の設定方法を確認する
-    "SCHEMA_PATH_PREFIX_TRIM": "/api/"
-    if os.getenv("ENABLE_SCHEMA_PATH_PREFIX_TRIM", "1") == "1"
-    else "",
+    "SCHEMA_PATH_PREFIX_TRIM": "/api/" if os.getenv("ENABLE_SCHEMA_PATH_PREFIX_TRIM", "1") == "1" else "",
 }
