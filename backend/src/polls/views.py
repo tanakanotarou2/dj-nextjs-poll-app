@@ -11,13 +11,13 @@ from polls.serializers import (
     QuestionSerializer,
     QuestionUpdateSerializer,
 )
-from polls.use_cases.actions import (
+from polls.use_cases.question.actions import (
     QuestionCreateAction,
     QuestionFindAllAction,
     QuestionUpdateAction,
 )
 from polls.use_cases.choice.actions import VoteAction
-from prjlib.views import ModelViewSet
+from lib.views import ModelViewSet
 
 
 class QuestionViewSet(ModelViewSet):
