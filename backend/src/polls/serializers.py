@@ -9,6 +9,10 @@ class ChoiceSerializer(ModelSerializer):
         fields = "__all__"
         read_only_fields = ["question", "votes"]
 
+    # def create(self, validated_data):
+    #     print(validated_data)
+    #     return Choice.objects.first()
+
 
 # [memo] レスポンス用の serializer は多くて2つというルールにしたいです。
 #        ただし、権限ごとに参照可能なフィールドが異なるものが多くあったり、エンドポイントが異なる場合は、それぞれの Serializer を用意して良いです。
@@ -34,3 +38,6 @@ class QuestionUpdateSerializer(ModelSerializer):
     class Meta:
         model = Question
         fields = ["pub_date", "question_text"]
+
+
+# class VoteSerializer(serializers.Serializer):

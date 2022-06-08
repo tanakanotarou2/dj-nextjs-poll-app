@@ -1,7 +1,12 @@
-from rest_framework.routers import DefaultRouter
+from django.urls import include, path
+from rest_framework_nested import routers
 
 from polls import views
 
-router = DefaultRouter()
+router = routers.SimpleRouter()
 router.register("questions", views.QuestionViewSet)
-urlpatterns = router.urls
+
+questions_router = routers.NestedSimpleRouter(router, "questions", lookup="question")
+questions_router.register("choices", views.ChoiceViewSet, basename="question-choices")
+
+urlpatterns = [path("", include(router.urls)), path("", include(questions_router.urls))]
