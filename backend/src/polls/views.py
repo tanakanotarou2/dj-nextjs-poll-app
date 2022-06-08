@@ -1,10 +1,12 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from polls.models import Question
+from polls.models import Choice, Question
 from polls.serializers import (
+    ChoiceSerializer,
     QuestionDetailSerializer,
     QuestionSerializer,
     QuestionUpdateSerializer,
@@ -14,6 +16,7 @@ from polls.use_cases.actions import (
     QuestionFindAllAction,
     QuestionUpdateAction,
 )
+from polls.use_cases.choice.actions import VoteAction
 from prjlib.views import ModelViewSet
 
 
@@ -78,3 +81,33 @@ class QuestionViewSet(ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChoiceViewSet(ModelViewSet):
+    # とくに validation が必要だったり, こみいった更新などがないので drf の標準の使い方で済ませます
+    queryset = Choice.objects.all()
+    serializer_class = ChoiceSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        # filter by nested-router-keyword
+        return Choice.objects.filter(question=self.kwargs["question_pk"])
+
+    def perform_create(self, serializer):
+        return serializer.save(question_id=int(self.kwargs["question_pk"]))
+
+    @extend_schema(
+        request=None,
+        # responses={200: None},
+        responses=ChoiceSerializer,
+        methods=["POST"],
+    )
+    @action(detail=True, methods=["post"])
+    def vote(self, request, question_pk, pk=None):
+        # choice の存在を確認するため get_object する
+        self.get_object()
+
+        action = VoteAction(pk)
+        choice = action.execute()
+        response_data = ChoiceSerializer(instance=choice).data
+        return Response(data=response_data, status=status.HTTP_200_OK)
