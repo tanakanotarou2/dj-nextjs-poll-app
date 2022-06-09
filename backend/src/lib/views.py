@@ -54,3 +54,8 @@ class ModelViewSet(
     GenericViewSet,
 ):
     pass
+
+
+# class UseUseCaseMixin:
+#     def __init__(self,*args,**kwargs):
+#         super(UseUseCaseMixin, self).__init__(*args,**kwargs)

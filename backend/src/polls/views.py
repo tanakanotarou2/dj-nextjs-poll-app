@@ -1,9 +1,12 @@
+from dependency_injector.wiring import Provide
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from lib.interfaces.application.use_case import UseCaseExecutor
+from lib.views import ModelViewSet
 from polls.models import Choice, Question
 from polls.serializers import (
     ChoiceSerializer,
@@ -11,19 +14,21 @@ from polls.serializers import (
     QuestionSerializer,
     QuestionUpdateSerializer,
 )
+from polls.use_cases.choice.actions import VoteAction
 from polls.use_cases.question.actions import (
     QuestionCreateAction,
     QuestionFindAllAction,
     QuestionUpdateAction,
 )
-from polls.use_cases.choice.actions import VoteAction
-from lib.views import ModelViewSet
+from project.containers import Container
 
 
 class QuestionViewSet(ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionDetailSerializer
     permission_classes = [AllowAny]
+
+    use_case_executor: UseCaseExecutor = Provide[Container.use_case_executor]
 
     def get_queryset(self):
         return QuestionFindAllAction.invoke()
@@ -35,6 +40,7 @@ class QuestionViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         action = QuestionUpdateAction(instance, serializer.validated_data)
+
         res_instance = action.execute()
 
         response_data = QuestionSerializer(res_instance).data
@@ -89,6 +95,8 @@ class ChoiceViewSet(ModelViewSet):
     serializer_class = ChoiceSerializer
     permission_classes = [AllowAny]
 
+    use_case_executor: UseCaseExecutor = Provide[Container.use_case_executor]
+
     def get_queryset(self):
         # filter by nested-router-keyword
         return Choice.objects.filter(question=self.kwargs["question_pk"])
@@ -108,6 +116,6 @@ class ChoiceViewSet(ModelViewSet):
         self.get_object()
 
         action = VoteAction(pk)
-        choice = action.execute()
+        choice = self.use_case_executor.execute(action)
         response_data = ChoiceSerializer(instance=choice).data
         return Response(data=response_data, status=status.HTTP_200_OK)
