@@ -1,10 +1,13 @@
 # view.py で利用する汎用クラスを配置しています。
-
+from dependency_injector.wiring import Provide
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin as OrgCreateModelMixin
 from rest_framework.mixins import DestroyModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+
+from lib.interfaces.application.use_case import UseCaseExecutor
+from project.containers import Container
 
 
 class PartialUpdateModelMixin:
@@ -56,6 +59,5 @@ class ModelViewSet(
     pass
 
 
-# class UseUseCaseMixin:
-#     def __init__(self,*args,**kwargs):
-#         super(UseUseCaseMixin, self).__init__(*args,**kwargs)
+class UseUseCaseMixin:
+    use_case_executor: UseCaseExecutor = Provide[Container.use_case_executor]

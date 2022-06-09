@@ -1,12 +1,10 @@
-from dependency_injector.wiring import Provide
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from lib.interfaces.application.use_case import UseCaseExecutor
-from lib.views import ModelViewSet
+from lib.views import ModelViewSet, UseUseCaseMixin
 from polls.models import Choice, Question
 from polls.serializers import (
     ChoiceSerializer,
@@ -20,15 +18,12 @@ from polls.use_cases.question.actions import (
     QuestionFindAllAction,
     QuestionUpdateAction,
 )
-from project.containers import Container
 
 
-class QuestionViewSet(ModelViewSet):
+class QuestionViewSet(UseUseCaseMixin, ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionDetailSerializer
     permission_classes = [AllowAny]
-
-    use_case_executor: UseCaseExecutor = Provide[Container.use_case_executor]
 
     def get_queryset(self):
         action = QuestionFindAllAction()
@@ -89,13 +84,11 @@ class QuestionViewSet(ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ChoiceViewSet(ModelViewSet):
+class ChoiceViewSet(UseUseCaseMixin, ModelViewSet):
     # とくに validation が必要だったり, こみいった更新などがないので drf の標準の使い方で済ませます
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
     permission_classes = [AllowAny]
-
-    use_case_executor: UseCaseExecutor = Provide[Container.use_case_executor]
 
     def get_queryset(self):
         # filter by nested-router-keyword
