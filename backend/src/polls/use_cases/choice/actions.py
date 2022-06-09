@@ -11,8 +11,9 @@ class VoteAction:
         self.choice_id = choice_id
 
     def execute(self) -> Choice:
-
         choice = Choice.objects.select_related("question").get(id=self.choice_id)
+
+        # あまり処理が多くなるようなら, VoteValidationService, ChoiceVoteService などを作ったら良いかもしれない
         VotePeriodValidator.validate(choice.question)
 
         Choice.objects.filter(id=self.choice_id).update(votes=F("votes") + 1)

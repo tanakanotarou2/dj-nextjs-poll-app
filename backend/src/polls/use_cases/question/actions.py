@@ -1,11 +1,11 @@
 from django.db import transaction
+from django.db.models import QuerySet
 
 from polls.models import Choice, Question
 
 
 class QuestionFindAllAction:
-    @classmethod
-    def invoke(*args, **kwargs):
+    def __call__(self, *args, **kwargs) -> QuerySet:
         """
         QuerySet返すだけのような場合は view から直接読んでも良いことにする。
         業務的な処理が入る場合は UseCase(Action) に切り出す。
@@ -19,7 +19,7 @@ class QuestionCreateAction:
     def __init__(self, data: dict):
         self._data = data.copy()
 
-    def execute(self) -> Question:
+    def __call__(self, *args, **kwargs) -> Question:
         with transaction.atomic():
             q = Question(
                 question_text=self._data["question_text"],
@@ -41,7 +41,7 @@ class QuestionUpdateAction:
         self._instance = instance
         self._data = data.copy()
 
-    def execute(self) -> Question:
+    def __call__(self, *args, **kwargs) -> Question:
         # 業務的な validation があれば validation service を作る
 
         # 本当は1項目づつみるほうが適切と思う
@@ -64,5 +64,5 @@ class QuestionDeleteAction:
     def __init__(self, instance: Question):
         self._instance = instance
 
-    def execute(self) -> None:
+    def __call__(self, *args, **kwargs) -> None:
         self._instance.delete()
