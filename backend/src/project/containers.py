@@ -1,14 +1,8 @@
 from dependency_injector import containers, providers
 
-from polls.containers import PollServices
-
-
-class TestService:
-    def run(self):
-        print("called run")
+from lib.interfaces.context.date_util import DateUtil
 
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
-    test_service = providers.Factory(TestService)
-    poll_services = providers.Container(PollServices)
+    date_util = providers.Dependency(instance_of=DateUtil)

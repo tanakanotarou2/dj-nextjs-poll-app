@@ -1,6 +1,6 @@
 # # from django.conf import settings
 # def _build_container():
-
+from dependency_injector import providers
 from django.utils.functional import SimpleLazyObject
 
 
@@ -13,8 +13,9 @@ def build_container():
     """
     from . import settings
     from .containers import Container
+    from lib.context.date_util import DjangoDateUtil
 
-    container = Container()
+    container = Container(date_util=DjangoDateUtil())
     container.config.from_dict(settings.__dict__)
     return container
 

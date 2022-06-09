@@ -1,6 +1,7 @@
 from django.db.models import F
 
 from polls.models import Choice
+from polls.use_cases.question.validators import VotePeriodValidator
 
 
 class VoteAction:
@@ -10,5 +11,11 @@ class VoteAction:
         self.choice_id = choice_id
 
     def execute(self) -> Choice:
+
+        choice = Choice.objects.select_related("question").get(id=self.choice_id)
+
+        VotePeriodValidator.validate(choice.question)
+
         Choice.objects.filter(id=self.choice_id).update(votes=F("votes") + 1)
-        return Choice.objects.get(id=self.choice_id)
+        choice.refresh_from_db()
+        return choice

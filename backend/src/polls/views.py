@@ -1,9 +1,11 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from lib.exceptions import ApplicationException
 from polls.models import Choice, Question
 from polls.serializers import (
     ChoiceSerializer,
@@ -107,7 +109,11 @@ class ChoiceViewSet(ModelViewSet):
         # choice の存在を確認するため get_object する
         self.get_object()
 
-        action = VoteAction(pk)
-        choice = action.execute()
+        try:
+            action = VoteAction(pk)
+            choice = action.execute()
+        except ApplicationException as e:
+            raise APIException(e.message)
+
         response_data = ChoiceSerializer(instance=choice).data
         return Response(data=response_data, status=status.HTTP_200_OK)
