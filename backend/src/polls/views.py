@@ -31,7 +31,8 @@ class QuestionViewSet(ModelViewSet):
     use_case_executor: UseCaseExecutor = Provide[Container.use_case_executor]
 
     def get_queryset(self):
-        return QuestionFindAllAction.invoke()
+        action = QuestionFindAllAction()
+        return self.use_case_executor.execute(action)
 
     def _update(self, request, *args, **kwargs):
         # format などの validation は serializer で行いたいのでインスタンスの取得も妥協します
@@ -41,8 +42,7 @@ class QuestionViewSet(ModelViewSet):
 
         action = QuestionUpdateAction(instance, serializer.validated_data)
 
-        res_instance = action.execute()
-
+        res_instance = self.use_case_executor.execute(action)
         response_data = QuestionSerializer(res_instance).data
 
         # [memo]
@@ -74,7 +74,7 @@ class QuestionViewSet(ModelViewSet):
         action = QuestionCreateAction(request_serializer.validated_data)
 
         # model instance をやりとりすることは許容
-        instance = action.execute()
+        instance = self.use_case_executor.execute(action)
 
         # response時のシリアライザ
         response_serializer = self.get_serializer(instance)
