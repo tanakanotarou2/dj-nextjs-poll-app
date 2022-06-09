@@ -1,4 +1,3 @@
-import abc
 import datetime
 from abc import ABC, abstractmethod
 from typing import Union
@@ -19,17 +18,21 @@ class DateUtil(ABC):
     def local_today(self) -> datetime.date:
         return self.local_now().date()
 
-    def add_days(self, value: Union[datetime.datetime, datetime.date], days) -> Union[datetime.datetime, datetime.date]:
+    def add_days(
+        self, value: Union[datetime.datetime, datetime.date], days
+    ) -> Union[datetime.datetime, datetime.date]:
         return value + datetime.timedelta(days=days)
 
-    def add_time(self, value: Union[datetime.datetime, datetime.date],
-                 days=0, hours=0, minutes=0, seconds=0, microseconds=0) -> datetime.datetime:
-        return value + datetime.timedelta(days=days,
-                                          hours=hours,
-                                          minutes=minutes,
-                                          seconds=seconds,
-                                          microseconds=microseconds,
-                                          )
+    def add_time(
+        self, value: Union[datetime.datetime, datetime.date], days=0, hours=0, minutes=0, seconds=0, microseconds=0
+    ) -> Union[datetime.datetime, datetime.date]:
+        return value + datetime.timedelta(
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            microseconds=microseconds,
+        )
 
     def make_aware(self, value, timezone=None, is_dst=None):
         raise NotImplementedError()

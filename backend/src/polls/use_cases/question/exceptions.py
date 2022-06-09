@@ -1,4 +1,4 @@
-from lib.exceptions import ApplicationException
+from lib.interfaces.application.exceptions import ApplicationException
 
 
 class VotePeriodException(ApplicationException):

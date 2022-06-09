@@ -1,7 +1,8 @@
 # # from django.conf import settings
 # def _build_container():
-from dependency_injector import providers
 from django.utils.functional import SimpleLazyObject
+
+from lib.api.use_case import APIUseCaseExecutor
 
 
 def build_container():
@@ -11,11 +12,12 @@ def build_container():
 
     https://python-dependency-injector.ets-labs.org/examples/django.html
     """
-    from . import settings
-    from .containers import Container
     from lib.context.date_util import DjangoDateUtil
 
-    container = Container(date_util=DjangoDateUtil())
+    from . import settings
+    from .containers import Container
+
+    container = Container(date_util=DjangoDateUtil(), use_case_executor=APIUseCaseExecutor())
     container.config.from_dict(settings.__dict__)
     return container
 
