@@ -20,6 +20,8 @@ import {format} from 'date-fns'
 import eolocale from 'date-fns/locale/eo'
 import ChoiceItem from './ChoiceItem';
 import React from 'react';
+import {number} from "prop-types";
+import {Choice, PaginatedQuestionDetailList} from "../../../api/@types";
 
 const QuestionList = () => {
 
@@ -31,6 +33,55 @@ const QuestionList = () => {
         isLoading,
         refetch: questionRefetch
     } = useAspidaQuery(apiClient.polls.questions, {query: {limit: 10,},});
+
+    const postUpvote = (choice: Choice) => {
+        return apiClient.polls.questions._question_pk(choice.question).choices._id(choice.id).upvote.$post();
+    };
+
+    // const mutation = useMutation()
+    const upVoteMutation = useMutation(postUpvote, {
+            onSuccess: (resCoice, postChoice) => {
+                // console.log("res",resCoice);
+                // console.log("post",postChoice);
+                const queryKey = apiClient.polls.questions.$path({query: {limit: 10}});
+
+                // 再検索する場合
+                // queryClient.invalidateQueries(queryKey)
+
+                // response を使って キャッシュを更新
+                const data = queryClient.getQueryData<PaginatedQuestionDetailList>(apiClient.polls.questions.$path({query: {limit: 10}}))
+                if(!data)return;
+
+                const newData = Object.assign({}, data);
+                newData.results = data.results?.map(q => {
+                    if (q.id !== resCoice.question) return q;
+
+                    const newQuestion = Object.assign({}, q);
+                    newQuestion.choice_set = q.choice_set.map((c:Choice) => {
+                        if (c.id === resCoice.id) {
+                            return resCoice;
+                        }
+                        return c;
+                    });
+                    return newQuestion;
+                });
+                // キャッシュをアップデート
+                queryClient.setQueryData(queryKey, newData)
+
+            }
+        }
+    )
+
+    const onUpVote = (choice: Choice) => {
+        upVoteMutation.mutate(choice)
+        // const res3 = await apiClient.polls.questions.$post({
+        //     body:{
+        //         question_text: "test",
+        //         pub_date: "2022-06-07T01:26:56.937Z",
+        //     }
+        // })
+        // console.log("res3", res3)
+    }
 
 
     let questionCards;
@@ -55,7 +106,7 @@ const QuestionList = () => {
                                     {question.choice_set.map((choice) => {
                                         return (
                                             <React.Fragment key={choice.id}>
-                                                <ChoiceItem choice={choice}/>
+                                                <ChoiceItem choice={choice} onUpVote={onUpVote}/>
                                             </React.Fragment>
                                         )
                                     })}

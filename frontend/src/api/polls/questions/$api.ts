@@ -4,13 +4,13 @@ import type { Methods as Methods0 } from '.'
 import type { Methods as Methods1 } from './_id@number'
 import type { Methods as Methods2 } from './_question_pk@number/choices'
 import type { Methods as Methods3 } from './_question_pk@number/choices/_id@number'
-import type { Methods as Methods4 } from './_question_pk@number/choices/_id@number/vote'
+import type { Methods as Methods4 } from './_question_pk@number/choices/_id@number/upvote'
 
 const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
   const prefix = (baseURL === undefined ? '' : baseURL).replace(/\/$/, '')
   const PATH0 = '/polls/questions'
   const PATH1 = '/choices'
-  const PATH2 = '/vote'
+  const PATH2 = '/upvote'
   const GET = 'GET'
   const POST = 'POST'
   const DELETE = 'DELETE'
@@ -51,7 +51,7 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
             const prefix2 = `${prefix0}${PATH1}/${val2}`
 
             return {
-              vote: {
+              upvote: {
                 post: (option?: { config?: T | undefined } | undefined) =>
                   fetch<Methods4['post']['resBody'], BasicHeaders, Methods4['post']['status']>(prefix, `${prefix2}${PATH2}`, POST, option).json(),
                 $post: (option?: { config?: T | undefined } | undefined) =>

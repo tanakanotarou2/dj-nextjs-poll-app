@@ -19,23 +19,33 @@ import {Choice} from "../../../../api/@types";
 
 interface Props {
     choice: Choice;
+    onUpVote: Function;
 }
+
+const StyledListItem = styled(ListItem)(({ theme }) => ({
+    // 偶数行目の背景色を変える
+    '&:nth-of-type(even)': {
+        backgroundColor: theme.palette.action.hover,
+    },
+}));
+
 
 
 const ChoiceItem = (props: Props) => {
+    const {choice, onUpVote} = props;
     return (
-        <ListItem
+        <StyledListItem
             secondaryAction={
                 (<>
                     <Typography variant="button">{props.choice.votes}</Typography>
-                    <IconButton edge="end" aria-label="up bote">
+                    <IconButton edge="end" aria-label="up vote" color="primary" onClick={() => onUpVote(choice)}>
                         <KeyboardArrowUpIcon/>
                     </IconButton>
                 </>)
             }
         >
             <ListItemText primary={props.choice.choice_text}/>
-        </ListItem>
+        </StyledListItem>
     )
 }
 
