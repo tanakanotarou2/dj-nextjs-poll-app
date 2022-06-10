@@ -3,11 +3,11 @@ import aspida from '@aspida/axios';
 import api from '../api/$api';
 
 axios.interceptors.request.use((config) => {
-  // 末尾にスラッシュなかったら追加
-  if (config.url && config.url[config.url.length - 1] !== '/') {
-    config.url += '/';
-  }
-  return config;
+    // 末尾にスラッシュなかったら追加
+    if (config.url && config.url[config.url.length - 1] !== '/') {
+        config.url += '/';
+    }
+    return config;
 });
 
-export const apiClient = api(aspida(axios, { baseURL: 'http://localhost:8000/' }));
+export const apiClient = api(aspida(axios, {baseURL: process.env.NEXT_PUBLIC_API_URI}));

@@ -2,20 +2,39 @@
 export type Choice = {
   id: number
   choice_text: string
-  votes?: number | undefined
+  votes: number
   question: number
 }
 
-export type PatchedQuestionDetail = {
-  id?: number | undefined
-  choice_set?: Choice[] | undefined
-  question_text?: string | undefined
+export type ChoiceRequest = {
+  choice_text: string
+}
+
+export type PaginatedChoiceList = {
+  count?: number | undefined
+  next?: string | null | undefined
+  previous?: string | null | undefined
+  results?: Choice[] | undefined
+}
+
+export type PaginatedQuestionDetailList = {
+  count?: number | undefined
+  next?: string | null | undefined
+  previous?: string | null | undefined
+  results?: QuestionDetail[] | undefined
+}
+
+export type PatchedChoiceRequest = {
+  choice_text?: string | undefined
+}
+
+export type PatchedQuestionUpdateRequest = {
   pub_date?: string | undefined
+  question_text?: string | undefined
 }
 
 export type Question = {
   id: number
-  code: string
   question_text: string
   pub_date: string
 }
@@ -27,7 +46,8 @@ export type QuestionDetail = {
   pub_date: string
 }
 
-export type QuestionEdit = {
-  pub_date: string
+export type QuestionDetailRequest = {
+  choice_set: ChoiceRequest[]
   question_text: string
+  pub_date: string
 }
