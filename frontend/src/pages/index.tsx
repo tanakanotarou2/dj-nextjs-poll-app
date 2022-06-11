@@ -1,21 +1,13 @@
 import type {NextPage} from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
 import styles from '../../styles/Home.module.css';
-
-import {apiClient} from '../lib/apiClient';
 import {useEffect} from 'react';
-
-import {useQueryClient, useMutation} from 'react-query'
-import {useAspidaQuery} from "@aspida/react-query";
-import {Card, CardActions, CardContent, Grid, Typography} from "@mui/material";
 import QuestionList from "@/components/Index/QuestionList";
 // import { useAspidaQuery } from "@aspida/react-query"
 // import aspida from "@aspida/axios" // "@aspida/fetch", "@aspida/node-fetch"
 // import api from "../api/$api"
 
 const Home: NextPage = () => {
-    const queryClient = useQueryClient()
 
     useEffect(() => {
         const fetchArticle = async () => {
