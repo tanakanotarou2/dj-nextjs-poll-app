@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type * as Types from '../../../../@types'
+import type * as Types from '../../../@types'
 
 export type Methods = {
   get: {
@@ -9,9 +9,9 @@ export type Methods = {
 
   patch: {
     status: 200
-    resBody: Types.QuestionDetail
+    resBody: Types.Question
     reqFormat: FormData
-    reqBody: Types.PatchedQuestionDetail
+    reqBody: Types.PatchedQuestionUpdateRequest
   }
 
   /** Questionデータを削除します */

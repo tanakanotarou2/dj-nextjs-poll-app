@@ -4,7 +4,7 @@ import type { Methods as Methods0 } from '.'
 
 const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
   const prefix = (baseURL === undefined ? '' : baseURL).replace(/\/$/, '')
-  const PATH0 = '/api/schema'
+  const PATH0 = '/schema'
   const GET = 'GET'
 
   return {
