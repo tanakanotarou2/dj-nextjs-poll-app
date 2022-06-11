@@ -1,30 +1,46 @@
 import {apiClient} from '@/lib/apiClient';
-import {useQueryClient, useMutation, useQuery} from 'react-query'
-import {useAspidaQuery} from "@aspida/react-query";
-import {
-    Box,
-    Card,
-    CardActions,
-    CardContent, CardHeader, Divider,
-    Grid,
-    IconButton,
-    List, ListItem, ListItemAvatar, ListItemText,
-    Paper,
-    Stack,
-    styled,
-    Typography
-} from "@mui/material";
+import {useMutation, useQuery, useQueryClient} from 'react-query'
+
+import {Box, Card, CardContent, Divider, List, Pagination, Stack, Typography} from "@mui/material";
 
 import {format} from 'date-fns'
-import eolocale from 'date-fns/locale/eo'
 import ChoiceItem from './ChoiceItem';
-import React from 'react';
-import {number} from "prop-types";
+import React, {useEffect} from 'react';
 import {Choice, PaginatedQuestionDetailList} from "../../../api/@types";
 
+const parsePageInfo = (listPageResponse: any, limit: number, offset = 0) => {
+    const count: number = listPageResponse.count
+    const totalPages = Math.floor((count + limit - 1) / limit);
+    const currentPage = Math.floor(offset / limit) + 1;
+
+    const next = offset + limit < count ? {offset: offset + limit, limit: limit} : null;
+    const previous = offset > 0 ? {offset: Math.max(0, offset - limit), limit: limit} : null;
+
+    return {
+        count,
+        totalPages,
+        currentPage,
+        next,
+        previous
+    }
+};
+const calcPageOffset = (page: number, limit: number) => {
+    return (page - 1) * limit;
+}
+
 const QuestionList = () => {
+    const LIMIT = 10;
+
+    const [offset, setOffset] = React.useState(0)
+    const [pageInfo, setPageInfo] = React.useState<any>()
+
 
     const queryClient = useQueryClient()
+    // let getQuestionsParams={
+    //     limit:10,
+    //
+    // };
+
 
     /* useAspidaQueryを使う場合 */
     // const {
@@ -35,12 +51,18 @@ const QuestionList = () => {
 
     /* useAspidaQuery を使わず、 useQuery を使う場合は次のようになる */
     // 特定の key を設定したい場合はこちらを使う
+
+    const fetchQuestions = (_offset = 0) => {
+        return apiClient.polls.questions.$get({query: {limit: LIMIT, offset: _offset}})
+    }
+
     const {
         data: questionData,
         isLoading,
         // refetch: questionRefetch
-    } = useQuery(['questions'],
-        () => apiClient.polls.questions.$get({query: {limit: 10,}}),
+    } = useQuery(['questions', {offset: offset}],
+        () => fetchQuestions(offset),
+        {keepPreviousData: true},
     );
 
     const postUpvote = (choice: Choice) => {
@@ -48,17 +70,22 @@ const QuestionList = () => {
     };
 
     // const mutation = useMutation()
-    const upVoteMutation = useMutation(postUpvote, {
+    const upvoteMutation = useMutation(postUpvote, {
             onSuccess: (resCoice, postChoice) => {
-                // console.log("res",resCoice);
-                // console.log("post",postChoice);
-                const queryKey = apiClient.polls.questions.$path({query: {limit: 10}});
+                // console.log("res",resCoice); // 新しいデータ
+                // console.log("post",postChoice); // 古いデータ
 
-                // 再検索する場合
+                // useAspidaQuery を使った場合の key
+                // const queryKey = apiClient.polls.questions.$path({query: {limit: 10}})
+
+                const queryKey = ['questions', {offset: offset}];
+
+                // 再検索する場合は, invalidateQueries を使う
+                // 基本的にはこちらを使いたい
                 // queryClient.invalidateQueries(queryKey)
 
                 // response を使って キャッシュを更新
-                const data = queryClient.getQueryData<PaginatedQuestionDetailList>(apiClient.polls.questions.$path({query: {limit: 10}}))
+                const data = queryClient.getQueryData<PaginatedQuestionDetailList>(queryKey)
                 if (!data) return;
 
                 const newData = Object.assign({}, data);
@@ -76,22 +103,43 @@ const QuestionList = () => {
                 });
                 // キャッシュをアップデート
                 queryClient.setQueryData(queryKey, newData)
-
             }
         }
     )
 
-    const onUpVote = (choice: Choice) => {
-        upVoteMutation.mutate(choice)
-        // const res3 = await apiClient.polls.questions.$post({
-        //     body:{
-        //         question_text: "test",
-        //         pub_date: "2022-06-07T01:26:56.937Z",
-        //     }
-        // })
-        // console.log("res3", res3)
+    const onUpvote = (choice: Choice) => {
+        upvoteMutation.mutate(choice)
     }
 
+
+    useEffect(() => {
+        if (!!questionData) setPageInfo(parsePageInfo(questionData, LIMIT, offset));
+    }, [questionData])
+
+
+    const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
+        const nextOffset = calcPageOffset(value, LIMIT);
+        console.log(nextOffset, offset);
+        if (offset == nextOffset) return;
+        setOffset(nextOffset);
+
+        // 画面を最上部に
+        window.scrollTo({
+            top: 0,
+            behavior: 'auto'
+        });
+    }
+    let pagination = <></>;
+    if (!!pageInfo) {
+        pagination = (
+            <Pagination
+                count={pageInfo.totalPages}
+                page={pageInfo.currentPage}
+                onChange={handleChangePage}
+                sx={{margin: "0 auto"}}
+            />
+        )
+    }
 
     let questionCards;
     if (!isLoading && !!questionData) {
@@ -115,7 +163,7 @@ const QuestionList = () => {
                                     {question.choice_set.map((choice) => {
                                         return (
                                             <React.Fragment key={choice.id}>
-                                                <ChoiceItem choice={choice} onUpVote={onUpVote}/>
+                                                <ChoiceItem choice={choice} onUpvote={onUpvote}/>
                                             </React.Fragment>
                                         )
                                     })}
@@ -130,11 +178,13 @@ const QuestionList = () => {
         questionCards = (<div>loading...</div>);
     }
     return (
-        <div>
+        <>
             <Stack direction="column" justifyContent="center">
+                {pagination}
                 {questionCards}
+                {pagination}
             </Stack>
-        </div>
+        </>
     )
 }
 
