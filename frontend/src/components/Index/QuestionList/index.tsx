@@ -1,26 +1,11 @@
 import {apiClient} from '@/lib/apiClient';
-import {useQueryClient, useMutation, useQuery} from 'react-query'
-import {useAspidaQuery} from "@aspida/react-query";
-import {useRouter} from 'next/router'
+import {useMutation, useQuery, useQueryClient} from 'react-query'
 
-import {
-    Box,
-    Card,
-    CardActions,
-    CardContent, CardHeader, Divider,
-    Grid,
-    IconButton,
-    List, ListItem, ListItemAvatar, ListItemText, Pagination,
-    Paper,
-    Stack,
-    styled,
-    Typography
-} from "@mui/material";
+import {Box, Card, CardContent, Divider, List, Pagination, Stack, Typography} from "@mui/material";
 
 import {format} from 'date-fns'
 import ChoiceItem from './ChoiceItem';
 import React, {useEffect} from 'react';
-import {number} from "prop-types";
 import {Choice, PaginatedQuestionDetailList} from "../../../api/@types";
 
 const parsePageInfo = (listPageResponse: any, limit: number, offset = 0) => {
@@ -51,8 +36,6 @@ const QuestionList = () => {
 
 
     const queryClient = useQueryClient()
-    const router = useRouter()
-
     // let getQuestionsParams={
     //     limit:10,
     //
@@ -87,7 +70,7 @@ const QuestionList = () => {
     };
 
     // const mutation = useMutation()
-    const upVoteMutation = useMutation(postUpvote, {
+    const upvoteMutation = useMutation(postUpvote, {
             onSuccess: (resCoice, postChoice) => {
                 // console.log("res",resCoice); // 新しいデータ
                 // console.log("post",postChoice); // 古いデータ
@@ -124,8 +107,8 @@ const QuestionList = () => {
         }
     )
 
-    const onUpVote = (choice: Choice) => {
-        upVoteMutation.mutate(choice)
+    const onUpvote = (choice: Choice) => {
+        upvoteMutation.mutate(choice)
     }
 
 
@@ -180,7 +163,7 @@ const QuestionList = () => {
                                     {question.choice_set.map((choice) => {
                                         return (
                                             <React.Fragment key={choice.id}>
-                                                <ChoiceItem choice={choice} onUpVote={onUpVote}/>
+                                                <ChoiceItem choice={choice} onUpvote={onUpvote}/>
                                             </React.Fragment>
                                         )
                                     })}
