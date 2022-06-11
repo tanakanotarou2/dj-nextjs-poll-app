@@ -1,7 +1,6 @@
 import {apiClient} from '@/lib/apiClient';
-import {useQueryClient, useMutation} from 'react-query'
+import {useQueryClient, useMutation, useQuery} from 'react-query'
 import {useAspidaQuery} from "@aspida/react-query";
-import DeleteIcon from '@mui/icons-material/Delete';
 import {
     Box,
     Card,
@@ -27,12 +26,22 @@ const QuestionList = () => {
 
     const queryClient = useQueryClient()
 
-    // .get がコールされた結果を受け取る
+    /* useAspidaQueryを使う場合 */
+    // const {
+    //     data: questionData,
+    //     isLoading,
+    //     refetch: questionRefetch
+    // } = useAspidaQuery(apiClient.polls.questions, {query: {limit: 10,},});
+
+    /* useAspidaQuery を使わず、 useQuery を使う場合は次のようになる */
+    // 特定の key を設定したい場合はこちらを使う
     const {
         data: questionData,
         isLoading,
-        refetch: questionRefetch
-    } = useAspidaQuery(apiClient.polls.questions, {query: {limit: 10,},});
+        // refetch: questionRefetch
+    } = useQuery(['questions'],
+        () => apiClient.polls.questions.$get({query: {limit: 10,}}),
+    );
 
     const postUpvote = (choice: Choice) => {
         return apiClient.polls.questions._question_pk(choice.question).choices._id(choice.id).upvote.$post();
@@ -50,14 +59,14 @@ const QuestionList = () => {
 
                 // response を使って キャッシュを更新
                 const data = queryClient.getQueryData<PaginatedQuestionDetailList>(apiClient.polls.questions.$path({query: {limit: 10}}))
-                if(!data)return;
+                if (!data) return;
 
                 const newData = Object.assign({}, data);
                 newData.results = data.results?.map(q => {
                     if (q.id !== resCoice.question) return q;
 
                     const newQuestion = Object.assign({}, q);
-                    newQuestion.choice_set = q.choice_set.map((c:Choice) => {
+                    newQuestion.choice_set = q.choice_set.map((c: Choice) => {
                         if (c.id === resCoice.id) {
                             return resCoice;
                         }
