@@ -12,7 +12,7 @@ from polls.serializers import (
     QuestionSerializer,
     QuestionUpdateSerializer,
 )
-from polls.use_cases.choice.actions import VoteAction
+from polls.use_cases.choice.actions import UpvoteAction
 from polls.use_cases.question.actions import (
     QuestionCreateAction,
     QuestionFindAllAction,
@@ -104,11 +104,15 @@ class ChoiceViewSet(UseUseCaseMixin, ModelViewSet):
         methods=["POST"],
     )
     @action(detail=True, methods=["post"])
-    def vote(self, request, question_pk, pk=None):
+    def upvote(self, request, question_pk, pk=None):
+        # [memo]
+        # upvote は question のアクションでも良いかもしれません。
+        # question に対し「私はこの項目を選択します」というアクションでも、意味は合っていると思います。
+
         # choice の存在を確認するため get_object する
         self.get_object()
 
-        action = VoteAction(pk)
+        action = UpvoteAction(pk)
         choice = self.use_case_executor.execute(action)
         response_data = ChoiceSerializer(instance=choice).data
         return Response(data=response_data, status=status.HTTP_200_OK)

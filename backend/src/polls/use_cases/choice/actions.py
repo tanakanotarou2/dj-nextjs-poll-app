@@ -4,7 +4,7 @@ from polls.models import Choice
 from polls.use_cases.question.validators import VotePeriodValidator
 
 
-class VoteAction:
+class UpvoteAction:
     """投票アクション"""
 
     def __init__(self, choice_id):
@@ -13,7 +13,8 @@ class VoteAction:
     def execute(self) -> Choice:
         choice = Choice.objects.select_related("question").get(id=self.choice_id)
 
-        # あまり処理が多くなるようなら, VoteValidationService, ChoiceVoteService などを作ったら良いかもしれない
+        # downvote アクションを追加したり、あまり処理が多くなるようなら、
+        # VoteValidationService, ChoiceVoteService などを作ったら良いかもしれない
         VotePeriodValidator.validate(choice.question)
 
         Choice.objects.filter(id=self.choice_id).update(votes=F("votes") + 1)
