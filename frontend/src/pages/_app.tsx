@@ -2,16 +2,17 @@ import '../../styles/globals.css';
 import type {AppProps} from 'next/app';
 
 
+import {ThemeProvider} from '@mui/material/styles';
 import {Hydrate, QueryClient, QueryClientProvider} from 'react-query'
 import React, {useState} from "react";
 import {useAtomsDebugValue} from "jotai/devtools";
 
-import {atom, Provider as JotaiProvider} from 'jotai'
+import {Provider as JotaiProvider} from 'jotai'
 
 import {SnackbarKey, SnackbarProvider} from 'notistack';
-import {Button, Icon, IconButton, styled} from "@mui/material";
+import {IconButton, styled} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-
+import {defaultTheme} from "./styles";
 
 // react-query の設定
 const queryClientOptions = {
@@ -60,13 +61,17 @@ function MyApp({Component, pageProps}: AppProps) {
 
                 {/* https://react-query.tanstack.com/guides/ssr#using-nextjs */}
                 <Hydrate state={pageProps.dehydratedState}> {/* よくわかっていない. react-query のサンプル似合ったので追加 */}
-                    <SnackbarProvider
-                        maxSnack={4}
-                        // @ts-ignore
-                        ref={notistackRef}
-                        action={snackbarAction}>
-                        <Component {...pageProps} />
-                    </SnackbarProvider>
+
+                    <ThemeProvider theme={defaultTheme}>
+                        <SnackbarProvider
+                            maxSnack={4}
+                            // @ts-ignore
+                            ref={notistackRef}
+                            action={snackbarAction}
+                        >
+                            <Component {...pageProps} />
+                        </SnackbarProvider>
+                    </ThemeProvider>
                 </Hydrate>
             </JotaiProvider>
         </QueryClientProvider>
