@@ -7,6 +7,8 @@ import {format} from 'date-fns'
 import ChoiceItem from './ChoiceItem';
 import React, {useEffect} from 'react';
 import {Choice, PaginatedQuestionDetailList} from "../../../api/@types";
+import {messageAtom} from '@/lib/jotaiAtom';
+import {useAtom} from "jotai";
 
 const parsePageInfo = (listPageResponse: any, limit: number, offset = 0) => {
     const count: number = listPageResponse.count
@@ -40,11 +42,11 @@ class ErrorHandler {
         this.next = next;
     }
 
-    putError(error: any) {
+    putError(error: any): any {
         if (this.beAbleToHandle(error)) {
-            this.handle(error)
+            return this.handle(error)
         } else if (this.next != null) {
-            this.next.putError(error);
+            return this.next.putError(error);
         } else {
             console.log("error", error);
         }
@@ -75,11 +77,13 @@ class SimpleErrorHandler extends ErrorHandler {
         const data = errorResponse.data;
 
         if (!('detail' in data)) return false;
-        return typeof data.detail === "string";
+        console.log("find detail");
+        return (typeof data.detail) === "string";
     }
 
     handle(error: any): SingleErrorMessage {
-        return error.response.data.detail;
+        console.log("find single error")
+        return new SingleErrorMessage(error.response.data.detail);
     }
 }
 
@@ -90,6 +94,7 @@ const QuestionList = () => {
 
     const [offset, setOffset] = React.useState(0)
     const [pageInfo, setPageInfo] = React.useState<any>()
+    const [, addMessage] = useAtom(messageAtom);
 
 
     const queryClient = useQueryClient()
@@ -162,9 +167,13 @@ const QuestionList = () => {
                 queryClient.setQueryData(queryKey, newData)
             },
             onError: (error: any) => {
-                const err:any=errorHandler.putError(error);
-                if(err instanceof SingleErrorMessage){
+                const err: any = errorHandler.putError(error);
+                console.log(error, err)
+                if (err instanceof SingleErrorMessage) {
+                    addMessage({text: err.message, "variant": "warning"});
+                } else {
 
+                    addMessage({text: "不明なエラー", "variant": "error"});
                 }
             }
         }
