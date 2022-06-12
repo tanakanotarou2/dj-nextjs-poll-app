@@ -6,35 +6,36 @@ import QuestionList from "@/components/Index/QuestionList";
 // import { useAspidaQuery } from "@aspida/react-query"
 // import aspida from "@aspida/axios" // "@aspida/fetch", "@aspida/node-fetch"
 // import api from "../api/$api"
+import {atom, useAtom} from 'jotai'
+import {atomFamily} from 'jotai/utils'
+import {nanoid} from "nanoid";
+import {useSnackbar, VariantType} from "notistack";
+import {Button} from "@mui/material";
+import {messagesAtom, writeMessageAtom} from "@/lib/jotaiAtom";
+import CommonSnackbar from "@/components/shared/CommonSnackbar";
 
 const Home: NextPage = () => {
 
-    useEffect(() => {
-        const fetchArticle = async () => {
-            // $ つきの場合は response.body を自動で展開してくれる
-            // const res2 = await apiClient.api.polls.questions.get();
-            // console.log('res2', res2);
-            // create
-            // const res3 = await apiClient.polls.questions.$post({
-            //     body:{
-            //         question_text: "test",
-            //         pub_date: "2022-06-07T01:26:56.937Z",
-            //     }
-            // })
-            // console.log("res3", res3)
+    const [, addMessage] = useAtom(writeMessageAtom);
 
-            // patch
-            // const res4 =await apiClient.polls.questions._id(16).$patch({
-            //     body:{ question_text:"upd" }
-            // })
-            // console.log("res4",res4);
-
-            // delete
-            // const res4 =await apiClient.polls.questions._id(17).$delete()
-            // console.log("res4",res4);
-        };
-        fetchArticle();
-    }, []);
+    const additem = () => {
+        const title = {message: "test2<br> てすとです。\nどのようにひょうじされますか？", variant: "warning"}
+        // const id = nanoid();
+        addMessage(title);
+        console.log("add");
+    }
+    const additem2 = () => {
+        const title = {message: "test2", variant: "success"}
+        // const id = nanoid();
+        addMessage(title);
+        console.log("add");
+    }
+    const additem3 = () => {
+        const title = {message: "test2", variant: "error"}
+        // const id = nanoid();
+        addMessage(title);
+        console.log("add");
+    }
 
     return (
         <div className={styles.container}>
@@ -45,8 +46,13 @@ const Home: NextPage = () => {
             </Head>
             <main className={styles.main}>
                 <h1 className={styles.title}>Poll Questions</h1>
-                <QuestionList />
+                {/*<QuestionList />*/}
+                <button onClick={additem} value="add">add</button>
+                <button onClick={additem2} value="add">add</button>
+                <button onClick={additem3} value="add">add</button>
             </main>
+
+            <CommonSnackbar/>
         </div>
     );
 };

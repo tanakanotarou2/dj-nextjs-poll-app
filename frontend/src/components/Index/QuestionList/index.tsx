@@ -28,6 +28,63 @@ const calcPageOffset = (page: number, limit: number) => {
     return (page - 1) * limit;
 }
 
+
+class ErrorHandler {
+    next: ErrorHandler | null;
+
+    constructor() {
+        this.next = null;
+    }
+
+    setNext(next: ErrorHandler) {
+        this.next = next;
+    }
+
+    putError(error: any) {
+        if (this.beAbleToHandle(error)) {
+            this.handle(error)
+        } else if (this.next != null) {
+            this.next.putError(error);
+        } else {
+            console.log("error", error);
+        }
+    }
+
+    beAbleToHandle(error: any): boolean {
+        throw new Error("beAbleToHandle を実装してください");
+    }
+
+    handle(error: any) {
+        throw new Error("handle を実装してください");
+    }
+}
+
+class SingleErrorMessage {
+    message: string
+
+    constructor(message: string) {
+        this.message = message
+    }
+}
+
+class SimpleErrorHandler extends ErrorHandler {
+    beAbleToHandle(error: any): boolean {
+        if (!('response' in error)) return false;
+        const errorResponse = error.response
+        if (!('data' in errorResponse)) return false;
+        const data = errorResponse.data;
+
+        if (!('detail' in data)) return false;
+        return typeof data.detail === "string";
+    }
+
+    handle(error: any): SingleErrorMessage {
+        return error.response.data.detail;
+    }
+}
+
+const errorHandler = new SimpleErrorHandler();
+
 const QuestionList = () => {
     const LIMIT = 10;
 
@@ -103,6 +160,12 @@ const QuestionList = () => {
                 });
                 // キャッシュをアップデート
                 queryClient.setQueryData(queryKey, newData)
+            },
+            onError: (error: any) => {
+                const err:any=errorHandler.putError(error);
+                if(err instanceof SingleErrorMessage){
+
+                }
             }
         }
     )
@@ -119,7 +182,6 @@ const QuestionList = () => {
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {
         const nextOffset = calcPageOffset(value, LIMIT);
-        console.log(nextOffset, offset);
         if (offset == nextOffset) return;
         setOffset(nextOffset);
 
