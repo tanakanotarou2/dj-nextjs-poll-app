@@ -5,6 +5,7 @@ import {Button, Link} from "@mui/material";
 import {useRouter} from "next/router";
 
 import Head from 'next/head';
+import CommonSnackbar from "@/components/shared/CommonSnackbar";
 // @ts-ignore
 const DefaultLayout = ({children}) => {
     const router = useRouter()
@@ -36,6 +37,7 @@ const DefaultLayout = ({children}) => {
                     {children}
                 </div>
             </div>
+            <CommonSnackbar/>
         </>
     )
 }

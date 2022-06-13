@@ -6,11 +6,16 @@ import {useEffect} from "react";
 import {QuestionDetailRequest} from "../../../../api/@types";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from "axios";
+import {useAtom} from "jotai";
+import {messageAtom} from "@/lib/jotaiAtom";
 
 export const CreateForm = () => {
     const queryClient = useQueryClient()
+    const [, addMessage] = useAtom(messageAtom);
 
     const {register, handleSubmit, control, setError, formState: {errors}} = useForm<QuestionDetailRequest>();
+    const postUrl = apiClient.polls.questions.$path();
 
     // 可変長項目
     // https://react-hook-form.com/api/usefieldarray
@@ -23,14 +28,21 @@ export const CreateForm = () => {
         if (choiceFields.length <= 0) appendChoice({choice_text: ''})
     }, [])
 
+
     const mutation = useMutation(
-        (postData: QuestionDetailRequest) => apiClient.polls.questions.$post({body: postData}),
+        // [memo]
+        // aspida は form data で送信されるが、
+        // 入れ子の項目 choice があるので form data ではなく json で送信したい。(form data は入れ子にできないとのこと)
+        // そのため aspida のクライアント(apiClient) を使用せずに axios で送信する。
+        (postData: QuestionDetailRequest) => axios.post(postUrl, postData),
         {
             onSuccess: (resData, postData) => {
                 // questions のキャッシュは全クリア
                 queryClient.invalidateQueries(['questions'])
+                addMessage({text: "登録しました", "variant": "success"});
             },
             onError: (error: any) => {
+                console.log(error)
                 // const err: any = errorHandler.putError(error);
                 // console.log(error, err)
                 // if (err instanceof SingleErrorMessage) {
@@ -52,12 +64,8 @@ export const CreateForm = () => {
         return obj;
     }
     const onSubmit = (_data: QuestionDetailRequest) => {
-        const data=trimValues(_data)
-        console.log("sub", data)
-
-        // mutation(
-        // upvoteMutation.mutate(choice)
-        setError("question_text", {type: 'test', message: "test error"})
+        const data = trimValues(_data)
+        mutation.mutate(data)
     }
 
     const choiceFieldComponent = (
@@ -99,12 +107,12 @@ export const CreateForm = () => {
                     name="question_text"
                     control={control}
                     defaultValue=""
-                    rules={{required: "入力してください"}}
+                    // rules={{required: "入力してください"}}
                     render={({field}) =>
                         <TextField {...field}
                                    label="質問内容"
                                    placeholder="どうして..."
-                                   required
+                            // required
                                    InputLabelProps={{
                                        shrink: true,
                                    }}

@@ -10,4 +10,6 @@ axios.interceptors.request.use((config) => {
     return config;
 });
 
+// axios.defaults.headers.post['Content-Type'] = 'application/json';
+
 export const apiClient = api(aspida(axios, {baseURL: process.env.NEXT_PUBLIC_API_URI}));
