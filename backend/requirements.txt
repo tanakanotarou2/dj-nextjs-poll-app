@@ -1,2 +1,4 @@
 -r requirements/requirements-base.txt
--r requirements/requirements-testing.txt
+dj-static==0.0.6
+gunicorn
+psycopg2
