@@ -19,7 +19,7 @@ const CommonSnackbar = () => {
     useEffect(() => {
         if (!!message) {
             resetMessage();
-            const option = {autoHideDuration: 6000}
+            const option = {autoHideDuration: 5000}
             let txt: string;
             if (typeof message === "string") {
                 txt = message
@@ -27,6 +27,7 @@ const CommonSnackbar = () => {
                 txt = message.text
                 // @ts-ignore
                 option['variant'] = message.variant
+                option['autoHideDuration'] = message.autoHideDuration ?? option["autoHideDuration"]
             }
             if (txt.length > 0) enqueueSnackbar(txt, option)
         }
