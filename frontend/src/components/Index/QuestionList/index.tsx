@@ -9,6 +9,7 @@ import React, {useEffect} from 'react';
 import {Choice, PaginatedQuestionDetailList} from "../../../api/@types";
 import {messageAtom} from '@/lib/jotaiAtom';
 import {useAtom} from "jotai";
+import {apiErrorHandler, SimpleErrorHandler, SingleErrorMessage} from "@/lib/apiErrorHandler";
 
 const parsePageInfo = (listPageResponse: any, limit: number, offset = 0) => {
     const count: number = listPageResponse.count
@@ -30,64 +31,6 @@ const calcPageOffset = (page: number, limit: number) => {
     return (page - 1) * limit;
 }
 
-
-class ErrorHandler {
-    next: ErrorHandler | null;
-
-    constructor() {
-        this.next = null;
-    }
-
-    setNext(next: ErrorHandler) {
-        this.next = next;
-    }
-
-    putError(error: any): any {
-        if (this.beAbleToHandle(error)) {
-            return this.handle(error)
-        } else if (this.next != null) {
-            return this.next.putError(error);
-        } else {
-            console.log("error", error);
-        }
-    }
-
-    beAbleToHandle(error: any): boolean {
-        throw new Error("beAbleToHandle を実装してください");
-    }
-
-    handle(error: any) {
-        throw new Error("handle を実装してください");
-    }
-}
-
-class SingleErrorMessage {
-    message: string
-
-    constructor(message: string) {
-        this.message = message
-    }
-}
-
-class SimpleErrorHandler extends ErrorHandler {
-    beAbleToHandle(error: any): boolean {
-        if (!('response' in error)) return false;
-        const errorResponse = error.response
-        if (!('data' in errorResponse)) return false;
-        const data = errorResponse.data;
-
-        if (!('detail' in data)) return false;
-        console.log("find detail");
-        return (typeof data.detail) === "string";
-    }
-
-    handle(error: any): SingleErrorMessage {
-        console.log("find single error")
-        return new SingleErrorMessage(error.response.data.detail);
-    }
-}
-
-const errorHandler = new SimpleErrorHandler();
 
 const QuestionList = () => {
     const LIMIT = 10;
@@ -167,12 +110,11 @@ const QuestionList = () => {
                 queryClient.setQueryData(queryKey, newData)
             },
             onError: (error: any) => {
-                const err: any = errorHandler.putError(error);
-                console.log(error, err)
+                const err: any = apiErrorHandler.putError(error);
                 if (err instanceof SingleErrorMessage) {
                     addMessage({text: err.message, "variant": "warning"});
                 } else {
-
+                    console.log(error, err)
                     addMessage({text: "不明なエラー", "variant": "error"});
                 }
             }

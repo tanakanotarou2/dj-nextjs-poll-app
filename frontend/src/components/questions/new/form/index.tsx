@@ -1,20 +1,65 @@
 import {apiClient} from '@/lib/apiClient';
-import {useMutation, useQuery, useQueryClient} from 'react-query'
+
+import {format} from 'date-fns'
+import {useMutation, useQueryClient} from 'react-query'
 import {Box, Button, Divider, IconButton, Stack, TextField, Typography} from "@mui/material";
-import {Controller, useForm, useFieldArray} from "react-hook-form";
+import {Controller, useFieldArray, useForm} from "react-hook-form";
 import {useEffect} from "react";
 import {QuestionDetailRequest} from "../../../../api/@types";
-import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import {useAtom} from "jotai";
 import {messageAtom} from "@/lib/jotaiAtom";
+import {apiErrorHandler, FormErrors, SingleErrorMessage} from "@/lib/apiErrorHandler";
+
+
+const trimValues = (obj: any) => {
+    if (typeof obj === "string") return obj.trim()
+
+    for (const [key, value] of Object.entries(obj)) {
+        obj[key] = trimValues(value)
+    }
+    return obj;
+}
+
+const setFormErrors = (setFnc: any, error: any, key = "") => {
+
+    // console.log("kv",key,error);
+    for (const [k, v] of Object.entries(error)) {
+
+        const nxtkey = (key.length > 0 ? key + '.' : "") + k;
+        if (Array.isArray(v)) {
+            if (v.length == 0) continue;
+
+            if (typeof v[0] === 'string') {
+                // TODO: とりあえず先頭要素だけバインドしてる
+                // 複数メッセージ対応のため、こっち使ったほうがよい
+                // https://react-hook-form.com/api/useformstate/errormessage
+                setFnc(nxtkey, {type: "api_error", message: v[0]});
+                console.log("bind", nxtkey, v[0])
+            } else {
+                v.forEach((x, i) => {
+                    setFormErrors(setFnc, x, `${nxtkey}.${i}`)
+                });
+            }
+        } else if (typeof v === 'string') {
+            setFnc(nxtkey, {type: "api_error", message: v});
+        } else if (typeof v === 'object') {
+            setFormErrors(setFnc, v, nxtkey)
+        }
+    }
+}
 
 export const CreateForm = () => {
     const queryClient = useQueryClient()
     const [, addMessage] = useAtom(messageAtom);
 
-    const {register, handleSubmit, control, setError, formState: {errors}} = useForm<QuestionDetailRequest>();
+    const {
+        handleSubmit,
+        control,
+        setError,
+        formState: {errors}
+    } = useForm<QuestionDetailRequest>();
     const postUrl = apiClient.polls.questions.$path();
 
     // 可変長項目
@@ -40,29 +85,21 @@ export const CreateForm = () => {
                 // questions のキャッシュは全クリア
                 queryClient.invalidateQueries(['questions'])
                 addMessage({text: "登録しました", "variant": "success"});
+                // TODO: goto root
             },
-            onError: (error: any) => {
-                console.log(error)
-                // const err: any = errorHandler.putError(error);
-                // console.log(error, err)
-                // if (err instanceof SingleErrorMessage) {
-                //     addMessage({text: err.message, "variant": "warning"});
-                // } else {
-                //
-                //     addMessage({text: "不明なエラー", "variant": "error"});
-                // }
+            onError: (error: AxiosError) => {
+                const err: any = apiErrorHandler.putError(error);
+                if (err instanceof SingleErrorMessage) {
+                    addMessage({text: err.message, "variant": "warning"});
+                } else if (err instanceof FormErrors) {
+                    setFormErrors(setError, err.errors)
+                } else {
+                    console.log("err", error);
+                    addMessage({text: "不明なエラー", "variant": "error"});
+                }
             }
         }
     )
-
-    const trimValues = (obj: any) => {
-        if (typeof obj === "string") return obj.trim()
-
-        for (const [key, value] of Object.entries(obj)) {
-            obj[key] = trimValues(value)
-        }
-        return obj;
-    }
     const onSubmit = (_data: QuestionDetailRequest) => {
         const data = trimValues(_data)
         mutation.mutate(data)
@@ -82,7 +119,6 @@ export const CreateForm = () => {
                                 <TextField {...field}
                                            label={`回答${index + 1}`}
                                            sx={{width: '100%'}}
-                                           required
                                            InputLabelProps={{
                                                shrink: true,
                                            }}
@@ -98,7 +134,6 @@ export const CreateForm = () => {
             </div>)
         )
     )
-    console.log("errors", errors);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -107,12 +142,12 @@ export const CreateForm = () => {
                     name="question_text"
                     control={control}
                     defaultValue=""
-                    // rules={{required: "入力してください"}}
+                    rules={{required: "入力してください"}}
                     render={({field}) =>
                         <TextField {...field}
                                    label="質問内容"
                                    placeholder="どうして..."
-                            // required
+                                   required
                                    InputLabelProps={{
                                        shrink: true,
                                    }}
@@ -124,13 +159,13 @@ export const CreateForm = () => {
                     name="pub_date"
                     control={control}
                     rules={{required: "入力してください"}}
+                    defaultValue={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
                     render={({field}) =>
                         <TextField
                             {...field}
                             label="投票開始日時"
                             required
                             type="datetime-local"
-                            defaultValue=""
                             sx={{width: 250}}
                             InputLabelProps={{
                                 shrink: true,
