@@ -27,7 +27,7 @@ class QuestionViewSet(UseUseCaseMixin, ModelViewSet):
 
     def get_queryset(self):
         action = QuestionFindAllAction()
-        return self.use_case_executor.execute(action)
+        return self.use_case_executor.execute(action).order_by("-created")
 
     def _update(self, request, *args, **kwargs):
         # format などの validation は serializer で行いたいのでインスタンスの取得も妥協します

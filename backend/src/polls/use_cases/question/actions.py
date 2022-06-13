@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Prefetch, QuerySet
 
 from polls.models import Choice, Question
 
@@ -12,7 +12,8 @@ class QuestionFindAllAction:
         例) ログインユーザーによって参照範囲を制限する場合など
 
         """
-        return Question.objects.all().prefetch_related("choice_set")
+        choice_qs = Choice.objects.order_by("id")
+        return Question.objects.all().prefetch_related(Prefetch("choice_set", queryset=choice_qs))
 
 
 class QuestionCreateAction:
