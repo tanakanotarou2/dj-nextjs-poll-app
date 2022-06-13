@@ -32,7 +32,7 @@ const DefaultLayout = ({children}) => {
                         <Button color="inherit" variant="outlined" onClick={goCreate}>質問作成</Button>
                     </Toolbar>
                 </AppBar>
-                <div style={{paddingTop: 30}}>
+                <div style={{paddingTop: 30, paddingBottom: 20}}>
                     {children}
                 </div>
             </div>

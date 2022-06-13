@@ -1,15 +1,20 @@
 import {apiClient} from '@/lib/apiClient';
 import {useMutation, useQuery, useQueryClient} from 'react-query'
-import {Box, Button, Stack, TextField, Typography} from "@mui/material";
+import {Box, Button, Divider, IconButton, Stack, TextField, Typography} from "@mui/material";
 import {Controller, useForm, useFieldArray} from "react-hook-form";
 import {useEffect} from "react";
 import {QuestionDetailRequest} from "../../../../api/@types";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export const CreateForm = () => {
     const queryClient = useQueryClient()
 
-    const {register, handleSubmit, control, formState: {errors}} = useForm<QuestionDetailRequest>();
-    const {fields: choiceFields, append: appendChoice} = useFieldArray({
+    const {register, handleSubmit, control, setError, formState: {errors}} = useForm<QuestionDetailRequest>();
+
+    // 可変長項目
+    // https://react-hook-form.com/api/usefieldarray
+    const {fields: choiceFields, append: appendChoice, remove: removeChoice} = useFieldArray({
         control,
         name: "choice_set"
     });
@@ -38,10 +43,21 @@ export const CreateForm = () => {
         }
     )
 
-    const onSubmit = (data: QuestionDetailRequest) => {
-        // console.log(data)
+    const trimValues = (obj: any) => {
+        if (typeof obj === "string") return obj.trim()
+
+        for (const [key, value] of Object.entries(obj)) {
+            obj[key] = trimValues(value)
+        }
+        return obj;
+    }
+    const onSubmit = (_data: QuestionDetailRequest) => {
+        const data=trimValues(_data)
+        console.log("sub", data)
+
         // mutation(
         // upvoteMutation.mutate(choice)
+        setError("question_text", {type: 'test', message: "test error"})
     }
 
     const choiceFieldComponent = (
@@ -52,21 +68,29 @@ export const CreateForm = () => {
                     control={control}
                     defaultValue=""
                     rules={{required: "入力してください"}}
-                    render={({field}) =>
-                        <TextField {...field}
-                                   label={`回答${index + 1}`}
-                                   sx={{width: '100%'}}
-                                   required
-                                   InputLabelProps={{
-                                       shrink: true,
-                                   }}
-                                   error={!!errors.choice_set?.at(index)?.choice_text}
-                                   helperText={errors.choice_set?.at(index)?.choice_text?.message}
-                        />} />
+                    render={({field}) => {
+                        return (
+                            <Stack direction='row'>
+                                <TextField {...field}
+                                           label={`回答${index + 1}`}
+                                           sx={{width: '100%'}}
+                                           required
+                                           InputLabelProps={{
+                                               shrink: true,
+                                           }}
+                                           error={!!errors.choice_set?.at(index)?.choice_text}
+                                           helperText={errors.choice_set?.at(index)?.choice_text?.message}
+                                />
+                                <IconButton aria-label="delete" color="inherit" onClick={() => removeChoice(index)}>
+                                    <DeleteIcon/>
+                                </IconButton>
+                            </Stack>
+                        )
+                    }}/>
             </div>)
         )
     )
-    console.log(errors);
+    console.log("errors", errors);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -107,17 +131,27 @@ export const CreateForm = () => {
                             helperText={errors.pub_date?.message}
                         />}
                 />
-                <div>
+                <Box>
                     <Typography variant="h6">回答</Typography>
                     <Typography variant="subtitle2">
-                        質問への回答項目を作成してください
+                        質問への回答項目を入力してください
                     </Typography>
-                </div>
+                </Box>
+
                 {choiceFieldComponent}
+
                 <Box sx={{display: "flex"}}>
                     <div style={{flexGrow: 1}}/>
-                    <Button type="submit" variant="contained" color="primary" sx={{mx: "auto"}}
-                            size="medium">登録</Button>
+                    <Button variant="outlined" color="inherit" aria-label="add choice" onClick={() => {
+                        appendChoice({choice_text: ""})
+                    }}>
+                        回答追加
+                    </Button>
+                </Box>
+
+                <Box pt={1} sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                    <Divider sx={{width: "100%", mb: 2}}/>
+                    <Button type="submit" variant="contained" color="primary" size="medium">登録</Button>
                 </Box>
             </Stack>
         </form>

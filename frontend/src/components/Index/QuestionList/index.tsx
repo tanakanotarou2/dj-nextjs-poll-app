@@ -216,7 +216,7 @@ const QuestionList = () => {
     if (!isLoading && !!questionData) {
         questionCards = questionData.results?.map((question, index) => {
             return (
-                <Box key={question.id} p={2}>
+                <Box key={question.id} p={2} sx={{mx: "auto"}}>
                     <Card sx={{width: 600}} variant="outlined">
                         <CardContent>
                             <Box textAlign="right">
