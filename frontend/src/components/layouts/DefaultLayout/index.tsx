@@ -1,6 +1,5 @@
 import AppBar from "@mui/material/AppBar";
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import {Box, Button, IconButton, Link} from "@mui/material";
 import {useRouter} from "next/router";
 import GitHubIcon from '@mui/icons-material/GitHub';

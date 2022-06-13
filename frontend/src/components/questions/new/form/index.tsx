@@ -4,13 +4,14 @@ import {format} from 'date-fns'
 import {useMutation, useQueryClient} from 'react-query'
 import {Box, Button, Divider, IconButton, Stack, TextField, Typography} from "@mui/material";
 import {Controller, useFieldArray, useForm} from "react-hook-form";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {QuestionDetailRequest} from "../../../../api/@types";
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios, {AxiosError} from "axios";
 import {useAtom} from "jotai";
 import {messageAtom} from "@/lib/jotaiAtom";
 import {apiErrorHandler, FormErrors, SingleErrorMessage} from "@/lib/apiErrorHandler";
+import {useRouter} from "next/router";
 
 
 const trimValues = (obj: any) => {
@@ -23,8 +24,6 @@ const trimValues = (obj: any) => {
 }
 
 const setFormErrors = (setFnc: any, error: any, key = "") => {
-
-    // console.log("kv",key,error);
     for (const [k, v] of Object.entries(error)) {
 
         const nxtkey = (key.length > 0 ? key + '.' : "") + k;
@@ -51,8 +50,10 @@ const setFormErrors = (setFnc: any, error: any, key = "") => {
 }
 
 export const CreateForm = () => {
+    const router = useRouter()
     const queryClient = useQueryClient()
     const [, addMessage] = useAtom(messageAtom);
+    const [loading, setLoading] = useState(false);
 
     const {
         handleSubmit,
@@ -85,7 +86,7 @@ export const CreateForm = () => {
                 // questions のキャッシュは全クリア
                 queryClient.invalidateQueries(['questions'])
                 addMessage({text: "登録しました", "variant": "success"});
-                // TODO: goto root
+                router.push("/")
             },
             onError: (error: AxiosError) => {
                 const err: any = apiErrorHandler.putError(error);
@@ -97,10 +98,14 @@ export const CreateForm = () => {
                     console.log("err", error);
                     addMessage({text: "不明なエラー", "variant": "error"});
                 }
+            },
+            onSettled: () => {
+                setLoading(false)
             }
         }
     )
     const onSubmit = (_data: QuestionDetailRequest) => {
+        setLoading(true)
         const data = trimValues(_data)
         mutation.mutate(data)
     }
@@ -194,7 +199,8 @@ export const CreateForm = () => {
 
                 <Box pt={1} sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
                     <Divider sx={{width: "100%", mb: 2}}/>
-                    <Button type="submit" variant="contained" color="primary" size="medium">登録</Button>
+                    <Button type="submit" variant="contained" color="primary" size="medium"
+                            disabled={loading}>登録</Button>
                 </Box>
             </Stack>
         </form>
