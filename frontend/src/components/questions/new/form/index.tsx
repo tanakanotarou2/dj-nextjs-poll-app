@@ -71,7 +71,10 @@ export const CreateForm = () => {
     });
 
     useEffect(() => {
-        if (choiceFields.length <= 0) appendChoice({choice_text: ''})
+        if (choiceFields.length <= 0) {
+            appendChoice({choice_text: ''})
+            appendChoice({choice_text: ''})
+        }
     }, [])
 
 

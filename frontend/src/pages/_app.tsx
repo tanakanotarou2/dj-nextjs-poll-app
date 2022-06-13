@@ -10,7 +10,7 @@ import {Provider as JotaiProvider} from 'jotai'
 import {SnackbarKey, SnackbarProvider} from 'notistack';
 import {IconButton, styled} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import {defaultTheme} from "./styles";
+import {defaultTheme} from "@/lib/themes";
 import DefaultLayout from '@/components/layouts/DefaultLayout';
 
 // react-query の設定

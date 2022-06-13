@@ -9,7 +9,7 @@ import React, {useEffect} from 'react';
 import {Choice, PaginatedQuestionDetailList} from "../../../api/@types";
 import {messageAtom} from '@/lib/jotaiAtom';
 import {useAtom} from "jotai";
-import {apiErrorHandler, SimpleErrorHandler, SingleErrorMessage} from "@/lib/apiErrorHandler";
+import {apiErrorHandler, SingleErrorMessage} from "@/lib/apiErrorHandler";
 
 const parsePageInfo = (listPageResponse: any, limit: number, offset = 0) => {
     const count: number = listPageResponse.count
@@ -128,7 +128,7 @@ const QuestionList = () => {
 
     useEffect(() => {
         if (!!questionData) setPageInfo(parsePageInfo(questionData, LIMIT, offset));
-    }, [questionData])
+    }, [questionData, offset])
 
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, value: number) => {

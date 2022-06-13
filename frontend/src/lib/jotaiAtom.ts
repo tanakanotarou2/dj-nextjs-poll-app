@@ -1,4 +1,3 @@
-import {atom} from "jotai";
 import {VariantType} from "notistack";
 import {atomWithReset} from "jotai/utils";
 
