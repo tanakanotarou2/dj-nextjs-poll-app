@@ -188,7 +188,7 @@ const QuestionList = () => {
             )
         });
     } else {
-        questionCards = (<div>loading...</div>);
+        questionCards = (<div style={{margin:"0 auto"}}>loading中です。(初回アクセス時はサーバーの起動に少し時間がかかります)</div>);
     }
     return (
         <>
